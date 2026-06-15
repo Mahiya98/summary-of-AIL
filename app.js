@@ -4,7 +4,7 @@
 // =============================================================================
 const SHEET_ID = "1fx3FFlAPbF-_nbHEjUtEDrWW8LIwyygfYBZTwSVEVJw";
 const GID      = "58409945";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/1fx3FFlAPbF-_nbHEjUtEDrWW8LIwyygfYBZTwSVEVJw/edit?gid=58409945#gid=58409945`;
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRe7_Vji3K-cSqRkLgK3SKI20HrHzdbrowl2PVcletw5iwZ03NdSF00C6cRqh2tr7EN72BvFWEg3rqi/pub?gid=58409945&single=true&output=csv`;
 
 // =============================================================================
 // 1. STATE
