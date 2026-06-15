@@ -1,3 +1,22 @@
+// Requires <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+async function loadSheet(url) {
+  const buf  = await (await fetch(url)).arrayBuffer();
+  const wb   = XLSX.read(buf, { type: "array" });
+  const ws   = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(ws, { defval: "" });
+}
+
+loadSheet("your-file.xlsx").then(rows => {
+  rawRows.length = 0;
+  rawRows.push(...rows);
+
+  // Recompute employees & roles for every phase
+  for (const phase of Object.keys(staticMetrics)) {
+    data[phase].employees = countEmployeesInPhase(rawRows, phase);
+    data[phase].roles     = countUniqueRoles(rawRows, phase);
+  }
+  render(data);
+});
 // =============================================================================
 // 1. RAW ROWS — replace this with your parsed sheet rows (e.g. via SheetJS/PapaParse)
 //    Keys must match your column headers exactly.
