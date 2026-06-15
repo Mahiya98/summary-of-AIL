@@ -1,122 +1,73 @@
-// ===== Phase Data =====
-const data = {
-  "Phase-01": {
-    employees: 1815, roles: 80, requiredFTE: 301.9, overloaded: 1, underutilised: 62,
-    sections: { "Production SMS": 29.6, "Production Rolling": 58.1, "Inventory": 44.3, "Quality": 36.1, "Scrap Management": 40, "Distribution": 45 }
-  },
-  "Phase-02": {
-    employees: 1625, roles: 78, requiredFTE: 270.5, overloaded: 3, underutilised: 55,
-    sections: { "Production SMS": 32, "Production Rolling": 60, "Inventory": 46, "Quality": 38, "Scrap Management": 42, "Distribution": 47 }
-  },
-  "Phase-03": {
-    employees: 1617, roles: 76, requiredFTE: 265.0, overloaded: 5, underutilised: 50,
-    sections: { "Production SMS": 35, "Production Rolling": 63, "Inventory": 48, "Quality": 40, "Scrap Management": 44, "Distribution": 49 }
-  },
-  "Phase-04": {
-    employees: 1540, roles: 74, requiredFTE: 252.3, overloaded: 7, underutilised: 45,
-    sections: { "Production SMS": 38, "Production Rolling": 66, "Inventory": 50, "Quality": 42, "Scrap Management": 46, "Distribution": 51 }
-  }
-};
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-const charts = {};
-
-function buildTable(data) {
-  const phases = Object.keys(data);
-  const tbl = document.getElementById("compareTable");
-  if (!tbl) { console.error("❌ #compareTable not found"); return; }
-
-  let html = `<thead><tr><th>Metric</th>${phases.map(p => `<th>${p}</th>`).join("")}</tr></thead><tbody>`;
-  const rows = [
-    ["Total Employees",     p => data[p].employees.toLocaleString()],
-    ["Unique Roles",        p => data[p].roles],
-    ["Required FTE",        p => data[p].requiredFTE],
-    ["Overloaded Roles",    p => data[p].overloaded],
-    ["Underutilised Roles", p => data[p].underutilised],
-  ];
-  rows.forEach(([metric, fn]) => {
-    html += `<tr><td><strong>${metric}</strong></td>${phases.map(p => `<td>${fn(p)}</td>`).join("")}</tr>`;
-  });
-  html += "</tbody>";
-  tbl.innerHTML = html;
-  console.log("✅ Table built");
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f4f6fa;
+  color: #1f2937;
+  padding: 16px;
+  max-width: 1200px;
+  margin: auto;
 }
 
-function drawBar(id, labels, values, label, color) {
-  const el = document.getElementById(id);
-  if (!el) { console.error(`❌ Canvas #${id} not found`); return; }
-  if (charts[id]) charts[id].destroy();
-  charts[id] = new Chart(el, {
-    type: "bar",
-    data: { labels, datasets: [{ label, data: values, backgroundColor: color }] },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
-    }
-  });
+header { text-align: center; margin-bottom: 20px; }
+header h1 { font-size: 1.6rem; color: #0f172a; }
+.subtitle { color: #64748b; font-size: 0.95rem; margin-top: 4px; }
+
+.main-btn {
+  display: inline-block;
+  margin-top: 14px;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.main-btn:hover { transform: translateY(-2px); }
+
+.chart-card, .table-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.chart-card h2, .table-card h2 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: #0f172a;
 }
 
-function drawGrouped(id, labels, datasets) {
-  const el = document.getElementById(id);
-  if (!el) { console.error(`❌ Canvas #${id} not found`); return; }
-  if (charts[id]) charts[id].destroy();
-  charts[id] = new Chart(el, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: datasets.map(d => ({
-        label: d.label,
-        data: d.data,
-        backgroundColor: d.color
-      }))
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { position: "top" } },
-      scales: { y: { beginAtZero: true } }
-    }
-  });
+/* ✅ Chart container with fixed height */
+.chart-wrap {
+  position: relative;
+  height: 320px;
+  width: 100%;
+}
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
-function renderCharts(data) {
-  if (typeof Chart === "undefined") {
-    console.error("❌ Chart.js not loaded yet — retrying in 300ms");
-    setTimeout(() => renderCharts(data), 300);
-    return;
-  }
-  const phases = Object.keys(data);
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+th { background: #f1f5f9; font-weight: 600; }
+tr:hover { background: #f8fafc; }
 
-  drawBar("empChart", phases, phases.map(p => data[p].employees), "Employees", "#3b82f6");
-  drawBar("fteChart", phases, phases.map(p => data[p].requiredFTE), "Required FTE", "#10b981");
-
-  drawGrouped("loadChart", phases, [
-    { label: "Overloaded",    data: phases.map(p => data[p].overloaded),    color: "#ef4444" },
-    { label: "Underutilised", data: phases.map(p => data[p].underutilised), color: "#3b82f6" }
-  ]);
-
-  const sections = Object.keys(data[phases[0]].sections);
-  const colors = ["#2563eb", "#10b981", "#f59e0b", "#ef4444"];
-  const datasets = phases.map((p, i) => ({
-    label: p,
-    data: sections.map(s => data[p].sections[s] || 0),
-    color: colors[i % colors.length]
-  }));
-  drawGrouped("sectionChart", sections, datasets);
-
-  console.log("✅ Charts rendered");
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #94a3b8;
+  font-size: 0.85rem;
 }
 
-function init() {
-  console.log("🚀 Initializing dashboard...");
-  buildTable(data);
-  renderCharts(data);
-}
-
-// ===== Run safely after DOM ready =====
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
-  init();
+@media (max-width: 600px) {
+  header h1 { font-size: 1.3rem; }
+  .main-btn { font-size: 0.9rem; padding: 8px 18px; }
+  th, td { padding: 8px; font-size: 0.85rem; }
+  .chart-wrap { height: 260px; }
 }
