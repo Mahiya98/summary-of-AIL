@@ -1,4 +1,4 @@
-// Requires <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+// Requires <script src="https://docs.google.com/spreadsheets/d/1fx3FFlAPbF-_nbHEjUtEDrWW8LIwyygfYBZTwSVEVJw/edit?gid=58409945#gid=58409945"></script>
 async function loadSheet(url) {
   const buf  = await (await fetch(url)).arrayBuffer();
   const wb   = XLSX.read(buf, { type: "array" });
