@@ -1,10 +1,16 @@
 // =============================================================================
-// 0. CONFIG — Google Sheet export-as-XLSX URL
-//    Sheet must be shared "Anyone with the link → Viewer"
+// 0. CONFIG — pick ONE of these URLs.
+//    Option A (recommended): Published CSV  → no auth, fastest, works in browser
+//    Option B: Direct XLSX export → requires sheet shared "Anyone with link"
 // =============================================================================
 const SHEET_ID = "1fx3FFlAPbF-_nbHEjUtEDrWW8LIwyygfYBZTwSVEVJw";
 const GID      = "58409945";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRe7_Vji3K-cSqRkLgK3SKI20HrHzdbrowl2PVcletw5iwZ03NdSF00C6cRqh2tr7EN72BvFWEg3rqi/pub?gid=58409945&single=true&output=csv`;
+
+// ✅ Your published CSV link (works perfectly in browser, no CORS issues)
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRe7_Vji3K-cSqRkLgK3SKI20HrHzdbrowl2PVcletw5iwZ03NdSF00C6cRqh2tr7EN72BvFWEg3rqi/pub?gid=${GID}&single=true&output=csv`;
+
+// (Alt) XLSX export — uncomment if you prefer xlsx and the sheet is public:
+// const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=xlsx&gid=${GID}`;
 
 // =============================================================================
 // 1. STATE
@@ -22,17 +28,15 @@ const staticMetrics = {
     sections: { "Production SMS": 38, "Production Rolling": 66, "Inventory": 50, "Quality": 42, "Scrap Management": 46, "Distribution": 51 } },
 };
 
-let data = {}; // built from rawRows + staticMetrics
+let data = {};
 
 // =============================================================================
-// 2. HELPERS — robust column lookup (handles header variations / whitespace)
+// 2. HELPERS — robust column lookup
 // =============================================================================
 function pick(row, ...candidates) {
-  // returns the first non-empty value among candidate header names
   for (const key of candidates) {
     if (row[key] !== undefined && String(row[key]).trim() !== "") return row[key];
   }
-  // also try case/space-insensitive match
   const norm = s => String(s).toLowerCase().replace(/\s+/g, "");
   for (const k of Object.keys(row)) {
     if (candidates.some(c => norm(c) === norm(k))) {
@@ -72,13 +76,13 @@ function countUniqueRoles(rows, phase) {
 }
 
 // =============================================================================
-// 3. BUILD `data` FROM rawRows
+// 3. BUILD `data`
 // =============================================================================
 function buildData() {
   data = {};
   for (const phase of Object.keys(staticMetrics)) {
     data[phase] = {
-      employees:     countEmployeesInPhase(rawRows, phase),  // ✅ unique col F
+      employees:     countEmployeesInPhase(rawRows, phase),
       roles:         countUniqueRoles(rawRows, phase),
       requiredFTE:   staticMetrics[phase].requiredFTE,
       overloaded:    staticMetrics[phase].overloaded,
@@ -89,15 +93,30 @@ function buildData() {
 }
 
 // =============================================================================
-// 4. LOAD GOOGLE SHEET
+// 4. LOAD SHEET — auto-detects CSV vs XLSX  ✅ THE FIX
 // =============================================================================
 async function loadSheet(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Fetch failed: ${res.status} — is the sheet shared publicly?`);
-  const buf = await res.arrayBuffer();
-  const wb  = XLSX.read(buf, { type: "array" });
-  const ws  = wb.Sheets[wb.SheetNames[0]];
-  return XLSX.utils.sheet_to_json(ws, { defval: "" });
+  const res = await fetch(url, { redirect: "follow" });
+  if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
+
+  const isCsv = /output=csv|\.csv($|\?)/i.test(url);
+
+  let workbook;
+  if (isCsv) {
+    // 🟢 CSV path — read as text, parse as string
+    const text = await res.text();
+    if (!text || text.trim().startsWith("<")) {
+      throw new Error("Got HTML instead of CSV — check the publish URL / sharing settings.");
+    }
+    workbook = XLSX.read(text, { type: "string" });
+  } else {
+    // 🟢 XLSX path — read as binary
+    const buf = await res.arrayBuffer();
+    workbook = XLSX.read(buf, { type: "array" });
+  }
+
+  const ws = workbook.Sheets[workbook.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(ws, { defval: "", raw: false });
 }
 
 // =============================================================================
@@ -106,7 +125,6 @@ async function loadSheet(url) {
 function render(data) {
   const phases = Object.keys(data);
 
-  // ----- Comparison Table -----
   let html = `<thead><tr><th>Metric</th>${phases.map(p => `<th>${p}</th>`).join("")}</tr></thead><tbody>`;
   const rows = [
     ["Total Employees",     p => data[p].employees.toLocaleString()],
@@ -121,7 +139,6 @@ function render(data) {
   html += "</tbody>";
   document.getElementById("compareTable").innerHTML = html;
 
-  // ----- Charts -----
   drawBar("empChart", phases, phases.map(p => data[p].employees), "Employees", "#3b82f6");
   drawBar("fteChart", phases, phases.map(p => data[p].requiredFTE), "Required FTE", "#10b981");
 
@@ -162,21 +179,31 @@ function drawGrouped(id, labels, datasets) {
 }
 
 // =============================================================================
-// 7. BOOT — load sheet → build data → render
+// 7. BOOT
 // =============================================================================
 (async () => {
   try {
-    rawRows = await loadSheet(SHEET_URL);                          // ✅ live data
-    console.log("Loaded rows:", rawRows.length);
-    console.log("Sample row:", rawRows[0]);
-    console.log("Detected headers:", Object.keys(rawRows[0] || {}));
+    rawRows = await loadSheet(SHEET_URL);
+    console.log("✅ Loaded rows:", rawRows.length);
+    console.log("📋 Detected headers:", Object.keys(rawRows[0] || {}));
+    console.log("🔎 Sample row:", rawRows[0]);
+
+    // Show what phases & enroll values were detected (debugging)
+    const phaseSeen  = new Set(rawRows.map(getPhase).filter(Boolean));
+    const enrollSeen = new Set(rawRows.map(getEnroll).filter(Boolean));
+    console.log("🏷️  Phases found:", [...phaseSeen]);
+    console.log("👤 Unique Employee Enroll (all phases):", enrollSeen.size);
 
     buildData();
-    console.table(Object.fromEntries(Object.entries(data).map(([k, v]) => [k, { employees: v.employees, roles: v.roles }])));
+    console.table(
+      Object.fromEntries(
+        Object.entries(data).map(([k, v]) => [k, { employees: v.employees, roles: v.roles }])
+      )
+    );
 
     render(data);
   } catch (err) {
     console.error("❌ Could not load sheet:", err);
-    alert("Could not load Google Sheet.\n\nCheck:\n1) Sheet is shared 'Anyone with the link → Viewer'\n2) SHEET_ID and GID are correct\n\n" + err.message);
+    alert("Could not load sheet.\n" + err.message);
   }
 })();
