@@ -4,7 +4,7 @@
 // =============================================================================
 const SHEET_ID = "1fx3FFlAPbF-_nbHEjUtEDrWW8LIwyygfYBZTwSVEVJw";
 const GID      = "58409945";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=xlsx&gid=${GID}`;
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/1fx3FFlAPbF-_nbHEjUtEDrWW8LIwyygfYBZTwSVEVJw/edit?gid=58409945#gid=58409945`;
 
 // =============================================================================
 // 1. STATE
