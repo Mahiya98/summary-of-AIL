@@ -1,23 +1,47 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ===== Reset ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: #f4f6fa;
   color: #1f2937;
   padding: 16px;
   max-width: 1200px;
-  margin: auto;
+  margin: 0 auto;
+  line-height: 1.5;
 }
 
-header { text-align: center; margin-bottom: 20px; }
-header h1 { font-size: 1.6rem; color: #0f172a; }
-.subtitle { color: #64748b; font-size: 0.95rem; margin-top: 4px; }
+/* ===== Header ===== */
+header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 10px 0;
+}
+header h1 {
+  font-size: 1.6rem;
+  color: #0f172a;
+  font-weight: 700;
+}
+.subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
 
+/* ===== Main Dashboard Button ===== */
 .main-btn {
   display: inline-block;
   margin-top: 14px;
   background: linear-gradient(135deg, #2563eb, #1e40af);
-  color: #fff;
+  color: #ffffff !important;
   padding: 10px 22px;
   border-radius: 30px;
   text-decoration: none;
@@ -25,23 +49,37 @@ header h1 { font-size: 1.6rem; color: #0f172a; }
   font-size: 0.95rem;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
-.main-btn:hover { transform: translateY(-2px); }
+.main-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+.main-btn:active {
+  transform: translateY(0);
+}
 
-.chart-card, .table-card {
-  background: #fff;
+/* ===== Cards (Chart + Table) ===== */
+.chart-card,
+.table-card {
+  background: #ffffff;
   border-radius: 14px;
   padding: 18px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
 }
-.chart-card h2, .table-card h2 {
+
+.chart-card h2,
+.table-card h2 {
   font-size: 1rem;
   margin-bottom: 12px;
   color: #0f172a;
+  font-weight: 600;
 }
 
-/* ✅ Chart container with fixed height */
+/* ===== Chart Container — CRITICAL for Chart.js to render ===== */
 .chart-wrap {
   position: relative;
   height: 320px;
@@ -52,22 +90,73 @@ header h1 { font-size: 1.6rem; color: #0f172a; }
   height: 100% !important;
 }
 
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-th { background: #f1f5f9; font-weight: 600; }
-tr:hover { background: #f8fafc; }
+/* ✅ Fallback: if chart canvas is NOT wrapped in .chart-wrap */
+.chart-card canvas {
+  max-width: 100%;
+  max-height: 360px;
+}
 
+/* ===== Table ===== */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+tbody tr:hover {
+  background: #f8fafc;
+}
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== Footer ===== */
 footer {
   text-align: center;
   padding: 20px;
   color: #94a3b8;
   font-size: 0.85rem;
+  margin-top: 20px;
 }
 
+/* ===== Responsive (Mobile) ===== */
 @media (max-width: 600px) {
-  header h1 { font-size: 1.3rem; }
-  .main-btn { font-size: 0.9rem; padding: 8px 18px; }
-  th, td { padding: 8px; font-size: 0.85rem; }
-  .chart-wrap { height: 260px; }
+  body {
+    padding: 12px;
+  }
+  header h1 {
+    font-size: 1.3rem;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+  }
+  .main-btn {
+    font-size: 0.9rem;
+    padding: 8px 18px;
+  }
+  .chart-card,
+  .table-card {
+    padding: 14px;
+  }
+  .chart-wrap {
+    height: 260px;
+  }
+  th, td {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
 }
