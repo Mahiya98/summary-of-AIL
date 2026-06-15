@@ -1,4 +1,5 @@
-// Phase data based on your screenshots
+
+// ===== Phase Data (based on your screenshots) =====
 const data = {
   "Phase-01": {
     employees: 1815, roles: 80, requiredFTE: 301.9, overloaded: 1, underutilised: 62,
@@ -18,10 +19,11 @@ const data = {
   }
 };
 
+// ===== Render Function =====
 function render(data) {
   const phases = Object.keys(data);
 
-  // ===== Comparison Table =====
+  // ----- Comparison Table (at top) -----
   let html = `<thead><tr><th>Metric</th>${phases.map(p => `<th>${p}</th>`).join("")}</tr></thead><tbody>`;
   const rows = [
     ["Total Employees",     p => data[p].employees.toLocaleString()],
@@ -36,7 +38,7 @@ function render(data) {
   html += "</tbody>";
   document.getElementById("compareTable").innerHTML = html;
 
-  // ===== Charts =====
+  // ----- Charts -----
   drawBar("empChart", phases, phases.map(p => data[p].employees), "Employees", "#3b82f6");
   drawBar("fteChart", phases, phases.map(p => data[p].requiredFTE), "Required FTE", "#10b981");
 
@@ -55,13 +57,19 @@ function render(data) {
   drawGrouped("sectionChart", sections, datasets);
 }
 
+// ===== Chart Helpers =====
 const charts = {};
+
 function drawBar(id, labels, values, label, color) {
   if (charts[id]) charts[id].destroy();
   charts[id] = new Chart(document.getElementById(id), {
     type: "bar",
     data: { labels, datasets: [{ label, data: values, backgroundColor: color }] },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
 
@@ -71,10 +79,19 @@ function drawGrouped(id, labels, datasets) {
     type: "bar",
     data: {
       labels,
-      datasets: datasets.map(d => ({ label: d.label, data: d.data, backgroundColor: d.color }))
+      datasets: datasets.map(d => ({
+        label: d.label,
+        data: d.data,
+        backgroundColor: d.color
+      }))
     },
-    options: { responsive: true }
+    options: {
+      responsive: true,
+      plugins: { legend: { position: "top" } },
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
 
+// ===== Initial Render =====
 render(data);
