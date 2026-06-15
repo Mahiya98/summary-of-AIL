@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Phase Comparison Dashboard</title>
-<link rel="stylesheet" href="style.css" />
-<script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script defer src="app.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase Comparison Dashboard | AIL Manpower</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Libraries (defer = load in order, run after DOM ready) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="app.js"></script>
 </head>
 <body>
   <header>
@@ -17,6 +19,7 @@
        class="main-btn" target="_blank" rel="noopener noreferrer">
        🏠 Main Dashboard
     </a>
+    <p id="status" class="status"></p>
   </header>
 
   <section class="table-card">
@@ -25,7 +28,7 @@
   </section>
 
   <section class="chart-card">
-    <h2>Total Employees per Phase</h2>
+    <h2>Total Employees per Phase <span class="hint">(unique Employee Enroll, col F)</span></h2>
     <div class="chart-wrap"><canvas id="empChart"></canvas></div>
   </section>
 
@@ -40,12 +43,12 @@
   </section>
 
   <section class="chart-card">
-    <h2>Average Workload by Section (per Phase)</h2>
+    <h2>Headcount by Section (per Phase)</h2>
     <div class="chart-wrap"><canvas id="sectionChart"></canvas></div>
   </section>
 
   <footer>
-    <p>Summary of Manpower Reduction Project</p>
+    <p>Summary of Manpower Reduction Project · Live data from Google Sheets</p>
   </footer>
 </body>
 </html>
